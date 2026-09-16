@@ -14,7 +14,8 @@ prompt --application/create_application/payload_lens_demo_app
 --------------------------------------------------------------------------------
 
 declare
-    l_app_id number;
+    l_app_id  number;
+    l_auth_id number;
 begin
     wwv_flow_imp.import_begin(
         p_version_yyyy_mm_dd   => '2025.09.15',
@@ -38,6 +39,25 @@ begin
         p_name               => 'Home',
         p_step_title         => 'PayloadLens Demo',
         p_page_is_public_y_n => 'Y');
+
+    -- A blank/scripted application (unlike one created via the App Builder
+    -- wizard) has no authentication scheme at all, which makes APEX fail
+    -- every page request with "Error processing session sentry function"
+    -- even on public pages. Create a "No Authentication" scheme and make
+    -- it current so the demo app is actually reachable in a browser.
+    l_auth_id := wwv_flow_imp.id(9451028837402210);
+
+    wwv_flow_imp.create_authentication(
+        p_id                   => l_auth_id,
+        p_name                 => 'No Authentication',
+        p_scheme_type          => 'NATIVE_NO_AUTHENTICATION',
+        p_invalid_session_type => 'URL',
+        p_invalid_session_url  => 'f?p=&APP_ID.:1:&SESSION.::&DEBUG.:::',
+        p_comments             => 'PayloadLens demo app -- intentionally public, no login required.' );
+
+    wwv_flow_imp.set_flow_authentication(
+        p_flow_id        => l_app_id,
+        p_authentication => 'No Authentication' );
 
     wwv_flow_imp.import_end;
 
