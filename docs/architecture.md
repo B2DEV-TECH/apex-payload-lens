@@ -17,11 +17,12 @@ browser. Neither layer trusts the other with more than it needs.
 ## Why the split
 
 - **The server never trusts the client with credentials or query logic.**
-  The PL/SQL render function resolves the region's source (a SQL query, a
-  PL/SQL expression, or a page/application item) exactly once, server-side,
-  the same way any other APEX region does. The browser only ever receives
-  the already-resolved JSON text — it has no way to ask the server for more
-  data on its own, because it never has to.
+  The PL/SQL render function resolves a *Static Value* (substitution
+  strings included) or a *PL/SQL Function Body* exactly once, server-side,
+  with the page's session and bind variables. The browser only ever
+  receives the already-resolved JSON text — it has no way to ask the server
+  for more data on its own, because it never has to. The one client-side
+  source, *Item*, reads a page item that is already part of the page.
 - **The client never trusts the payload with more than display.** Once the
   JSON text reaches the browser, everything — parsing, masking, tree
   building, tokenizing for the code view, searching — is pure, dependency-
@@ -31,26 +32,33 @@ browser. Neither layer trusts the other with more than it needs.
 
 ## The PL/SQL layer (region plugin)
 
-PayloadLens is implemented as a modern (v2 API) Oracle APEX **region**
-plugin. Its render function's job is narrow and mechanical:
+PayloadLens is implemented as an Oracle APEX **region** plugin on the
+classic plugin API (`p_api_version => 1`: `apex_plugin.t_region`,
+`t_plugin`, and `t_region_render_result`). Its render function's job is
+narrow and mechanical:
 
-1. Resolve the region's configured source (see
-   [configuration.md](configuration.md) for the source-type options) into a
-   JSON string, using APEX's own region-source resolution the same way a
-   native region would.
+1. Resolve the configured source (see [configuration.md](configuration.md))
+   into a JSON string: a *Static Value* goes through
+   `apex_plugin_util.replace_substitutions`; a *PL/SQL Function Body* is
+   wrapped in an anonymous block and executed with `execute immediate`,
+   and if it raises, the error message becomes the payload so the page
+   still renders (the region shows its invalid-JSON state); an *Item* is
+   not read on the server at all — only its name is passed on.
 2. Emit an empty mount element for the client library to take over —
-   `<div id="<dom_id>_pl"></div>` — where `<dom_id>` is the region's stable,
-   always-populated DOM id (APEX guarantees this is unique per page,
-   independent of whether the developer bothered to set a Static ID).
-3. Register the plugin's CSS and JS assets via the standard
-   `apex_css.add_file` / `apex_javascript.add_library` APIs, using the
-   `#PLUGIN_FILES#` substitution string so the assets resolve correctly
-   regardless of which workspace or CDN configuration hosts them.
+   `<div id="<dom_id>_pl" class="payload-lens"></div>` — where `<dom_id>`
+   is the region's DOM id (the Static ID when one is set; APEX generates a
+   stable one otherwise, so it is unique per page).
+3. Register the plugin's CSS and JS via the standard `apex_css.add_file` /
+   `apex_javascript.add_library` APIs with `p_plugin.file_prefix` as the
+   directory, so the embedded files resolve wherever APEX serves plugin
+   files from.
 4. Serialize the resolved attributes (display mode, masking options, size
-   limit, etc. — see [configuration.md](configuration.md)) into the small
-   JSON object `payloadLens.init()` expects, and emit that call via
-   `apex_javascript.add_onload_code`, so initialization happens once the
-   DOM is ready.
+   limit, etc. — see [configuration.md](configuration.md)) with `apex_json`
+   into a `<script type="application/json">` element next to the mount
+   point (every `</` inside it is written as `<\/`, so a payload cannot
+   close the block early), and register a one-line
+   `apex_javascript.add_onload_code` call that `JSON.parse`s that element
+   and hands the result to `payloadLens.init()` once the DOM is ready.
 
 Everything past that point — actually reading the JSON, deciding what to
 show, masking it, letting the user search or copy it — is the client
@@ -99,7 +107,7 @@ Every one of these six shapes has a corresponding, deliberate render state
 `parsePayload` can classify already has a defined UI for it.
 
 Note that `parsePayload` itself has **no awareness of any size limit**. The
-"Maximum Display Size" check happens one step later, in the render function,
+"Max Display Bytes" check happens one step later, in the render function,
 which measures the UTF-8 byte length of the parsed value re-serialized as
 JSON and substitutes a "too large" state for the normal tree/code render if
 it exceeds the configured (and hard-capped) limit. This separation is
@@ -148,12 +156,12 @@ why that's safe). No field name or value is ever included in these figures.
 
 ```
 apex-payload-lens/
-├── plugin/           PL/SQL plugin definition (installable .sql export)
+├── plugin/           payload_lens_pkg.sql (PL/SQL render package) + the APEX plugin export (.sql)
 ├── src/js/           payload-lens.js — the client library, hand-written, unminified
 ├── src/css/          payload-lens.css — scoped styles, light/dark aware
 ├── dist/             built, minified assets embedded into the plugin
 ├── tests/            vitest + happy-dom test suite
-├── demo/             synthetic example.com/example.test JSON fixtures
+├── demo/             demo application export (APEX 26.1) + synthetic example.com/example.test JSON fixtures
 ├── docs/             this documentation set
-└── scripts/          build tooling (esbuild bundling, plugin packaging)
+└── scripts/          build.mjs (esbuild bundling) and sync-plugin-files.mjs (embeds dist/ into the APEX exports)
 ```

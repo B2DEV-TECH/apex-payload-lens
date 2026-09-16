@@ -25,5 +25,8 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Check embedded plug-in files match dist
+        run: npm run check:plugin-files
+
       - name: Test
         run: npm test

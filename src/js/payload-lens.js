@@ -46,7 +46,7 @@
   var MIN_MASK_LENGTH = 3;
   var MAX_MASK_LENGTH = 32;
 
-  // Hard ceiling applied even when the developer sets "Maximum Display Size"
+  // Hard ceiling applied even when the developer sets "Max Display Bytes"
   // higher than this. Protects the browser tab from a runaway render if a
   // page item unexpectedly holds many megabytes of text.
   var HARD_MAX_DISPLAY_BYTES = 5 * 1024 * 1024; // 5 MB
@@ -711,7 +711,7 @@
       el('p', {
         class: 'payload-lens__error-detail',
         text: 'Size is ' + formatBytes(sizeBytes) + ', which exceeds the configured limit of ' +
-          formatBytes(instance.maxDisplayBytes) + '. Increase "Maximum Display Size" on the region if you need to inspect it here.'
+          formatBytes(instance.maxDisplayBytes) + '. Increase "Max Display Bytes" on the region if you need to inspect it here.'
       })
     ]);
     instance.elements.viewport.appendChild(box);

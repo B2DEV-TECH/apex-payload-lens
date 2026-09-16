@@ -75,7 +75,7 @@ describe('parsePayload', () => {
   });
 
   it('does not itself enforce any maximum size — parsePayload has no size awareness', () => {
-    // The "Maximum Display Size" limit is enforced later, in the render
+    // The "Max Display Bytes" limit is enforced later, in the render
     // path (renderPayload -> renderTooLargeState), not inside parsePayload.
     // A payload larger than the plugin's default 1 MiB display limit still
     // parses successfully here.

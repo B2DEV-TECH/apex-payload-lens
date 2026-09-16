@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Explicit, well-defined empty states (`null`, `undefined`, empty string,
   empty object, empty array) and an invalid-JSON error state, so a
   PayloadLens region never renders a blank or confusing screen.
-- A configurable "Maximum Display Size" safeguard, with a hard 5 MiB
+- A configurable "Max Display Bytes" safeguard, with a hard 5 MiB
   ceiling, to keep an oversized payload from freezing the page.
 - Payload metadata bar (size, property count, array element count, max
   nesting depth), computed without ever exposing masked field content.
@@ -31,11 +31,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - JavaScript public API (`init`, `refresh`, `setPayload`, `expandAll`,
   `collapseAll`, `destroy`) for custom Dynamic Action integrations — see
   `docs/javascript-api.md`.
-- Synthetic demo fixtures (`demo/`) built around an "Invoice Processing
-  Integration" example, using only `example.com`/`example.test` data.
+- The plugin packaged as a genuine APEX plugin export
+  (`plugin/region_type_plugin_b2devtech_payload_lens.sql`, APEX 26.1) with
+  the PL/SQL render package in `plugin/payload_lens_pkg.sql`; three payload
+  sources: Static Value, Item, and PL/SQL Function Body.
+- A complete demo application export (`demo/payloadlens_demo_app.sql`,
+  APEX 26.1) rendering a synthetic `order.created` webhook with masking on,
+  plus synthetic JSON fixtures (`demo/*.json`) built around an "Invoice
+  Processing Integration" example — all `example.com`/`example.test` data.
+- `scripts/sync-plugin-files.mjs`, which embeds `dist/` into both APEX
+  exports byte-for-byte and doubles as a drift check
+  (`npm run check:plugin-files`).
 - Full documentation set: installation, configuration, masking,
   JavaScript API, security, and architecture.
 - Automated test suite (masking, parsing, metadata, and behavioral XSS
   safety tests) running under Vitest with `happy-dom`.
-- GitHub Actions CI running the test suite and build on every push and
-  pull request.
+- GitHub Actions CI running the test suite, the build, and the embedded
+  plugin files drift check on every push and pull request.

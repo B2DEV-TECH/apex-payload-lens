@@ -88,10 +88,11 @@ follows:
   outside a full APEX runtime, e.g. in the test suite).
 - Anything else (including the default `sourceType: 'STATIC'`) — uses
   `config.staticJson` verbatim. This is the path the APEX region plugin
-  itself always uses: the PL/SQL render function resolves the region source
-  (a page item, a `p_region.source` SQL/PLSQL expression, etc.) on the
-  server and emits the already-resolved JSON as `staticJson`, so the client
-  never needs server credentials or an extra round trip to read it.
+  uses for the *Static Value* and *PL/SQL Function Body* source types: the
+  PL/SQL render function resolves them on the server and emits the
+  already-resolved JSON as `staticJson`, so the client never needs server
+  credentials or an extra round trip to read it. Only the *Item* source
+  type arrives as `sourceType: 'ITEM'`.
 
 ## refresh(staticId)
 

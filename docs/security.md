@@ -81,7 +81,7 @@ renders whatever JSON text it is given.
 
 ## Client-side size limit is a safety net, not a security boundary
 
-The "Maximum Display Size" limit (see [configuration.md](configuration.md))
+The "Max Display Bytes" limit (see [configuration.md](configuration.md))
 exists to protect the browser tab from a pathologically large payload
 freezing the page while it builds a huge DOM tree. It is a usability and
 availability safeguard, not a security control — it does not, by itself,

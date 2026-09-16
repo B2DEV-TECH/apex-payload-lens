@@ -147,7 +147,7 @@ create or replace package body payload_lens_pkg as
                                    p_escape => false );
         end if;
 
-        apex_json.initialize_output(p_indent => 0);
+        apex_json.initialize_clob_output(p_preserve => false, p_indent => 0);
         apex_json.open_object;
 
         apex_json.write('staticId', l_dom_id);

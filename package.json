@@ -10,7 +10,8 @@
   },
   "scripts": {
     "build": "node scripts/build.mjs",
-    "build:plugin-files": "node scripts/build-plugin-files.mjs",
+    "sync:plugin-files": "node scripts/sync-plugin-files.mjs",
+    "check:plugin-files": "node scripts/sync-plugin-files.mjs --check",
     "test": "vitest run",
     "test:watch": "vitest"
   },

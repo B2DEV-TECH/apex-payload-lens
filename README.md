@@ -1,5 +1,8 @@
 # PayloadLens for Oracle APEX
 
+[![CI](https://github.com/B2DEV-TECH/apex-payload-lens/actions/workflows/ci.yml/badge.svg)](https://github.com/B2DEV-TECH/apex-payload-lens/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 An open-source Oracle APEX **region plugin** for inspecting, searching,
 masking, and reviewing integration JSON payloads — directly inside your
 APEX application, with no data ever leaving the page.
@@ -51,46 +54,72 @@ for this job.
 
 ## Requirements
 
-- Oracle APEX **24.2+** (developed against and verified on APEX 26.x).
-- No other plugin or database option dependencies.
+- Oracle APEX **26.1 or later**. The plugin and the demo application are
+  genuine APEX exports written by APEX 26.1.0, and APEX does not import
+  files produced by a release newer than the one installed; 26.1.0 is also
+  the only release this version has been installed and tested on.
+- No other plugin or database option dependencies. The render package needs
+  nothing beyond the parsing schema's ability to create a package.
 
 ## Installation
 
+Two files, in this order — the PL/SQL render package into the application's
+parsing schema, then the plugin export into the application:
+
 ```sh
-sql -S your_schema/your_password@your_connect_string @plugin/payload_lens_plugin.sql
+# 1. the render package (run as the parsing schema)
+sql -S your_parsing_schema/your_password@your_connect_string @plugin/payload_lens_pkg.sql
 ```
 
-or import `plugin/payload_lens_plugin.sql` through **App Builder → Shared
-Components → Plug-ins → Import**. Full instructions, including how to add a
-region and point it at a payload source, are in
-[docs/installation.md](docs/installation.md).
+```sql
+-- 2. the plugin: import plugin/region_type_plugin_b2devtech_payload_lens.sql
+--    through App Builder -> Shared Components -> Plug-ins -> Import, or
+--    scripted (SQLcl, same schema) by pointing apex_application_install at
+--    the target application first:
+begin
+    apex_application_install.set_workspace('YOUR_WORKSPACE');
+    apex_application_install.set_application_id(100);
+    apex_application_install.generate_offset;
+end;
+/
+@plugin/region_type_plugin_b2devtech_payload_lens.sql
+```
+
+Full instructions — including the demo application, upgrading, and
+uninstalling — are in [docs/installation.md](docs/installation.md).
 
 ## Quick example
 
-Add a region of type **PayloadLens**, give it a Static ID, and set its
-Source to any SQL/PL-SQL expression that returns JSON text — for example,
-a column from your integration log table. That's it; PayloadLens handles
-parsing, masking, and rendering from there.
+Add a region of type **PayloadLens**, give it a Static ID, and tell it where
+the JSON comes from with the **Source Type** attribute: a **Static Value**
+(pasted JSON, substitution strings allowed), an **Item** (the region follows
+a page item without a submit), or a **PL/SQL Function Body** — for example,
+a column from your integration log table:
 
 ```sql
--- Region Source: PL/SQL Expression
-select payload_clob
-from   integration_log
-where  log_id = :P1_LOG_ID
+-- Source Type: PL/SQL Function Body
+return (select payload_clob
+        from   integration_log
+        where  log_id = :P1_LOG_ID);
 ```
 
-Want to try it without wiring up a real data source first? The
-[`demo/`](demo) folder has ready-made, fully synthetic JSON fixtures (an
-"Invoice Processing Integration" example using only `example.com` /
-`example.test` data) covering a normal request/response pair, an error
-response, a deeply nested example, and an intentionally invalid JSON file —
-paste any of them into a region's Source to see every feature in action.
+That's it; PayloadLens handles parsing, masking, and rendering from there.
+
+Want to see it working before wiring up a real data source?
+[`demo/payloadlens_demo_app.sql`](demo/payloadlens_demo_app.sql) is a
+complete demo application (plugin included) that renders a synthetic
+`order.created` webhook with masking on. The [`demo/`](demo) folder also has
+ready-made JSON fixtures (an "Invoice Processing Integration" example using
+only `example.com` / `example.test` data) covering a normal request/response
+pair, an error response, a deeply nested example, and an intentionally
+invalid JSON file — paste any of them into a **Static Value** region to see
+every feature in action.
 
 ## Documentation
 
 | Doc | Covers |
 | --- | --- |
-| [docs/installation.md](docs/installation.md) | Installing the plugin and adding your first region |
+| [docs/installation.md](docs/installation.md) | Installing the plugin, importing the demo application, adding your first region |
 | [docs/configuration.md](docs/configuration.md) | Every Page Designer attribute, in depth |
 | [docs/masking.md](docs/masking.md) | Exactly how sensitive-field masking works |
 | [docs/javascript-api.md](docs/javascript-api.md) | The `payloadLens` JavaScript API, for custom Dynamic Actions |
@@ -101,12 +130,17 @@ paste any of them into a region's Source to see every feature in action.
 
 ```sh
 npm install
-npm test         # runs the Vitest suite (masking, parsing, metadata, XSS-safety)
-npm run build    # bundles src/ into dist/payload-lens.min.{js,css}
+npm test                    # runs the Vitest suite (masking, parsing, metadata, XSS-safety)
+npm run build               # bundles src/ into dist/payload-lens.min.{js,css}
+npm run sync:plugin-files   # embeds dist/ into the two APEX exports (plugin + demo app)
+npm run check:plugin-files  # fails if the embedded files drifted from dist/ (CI runs this)
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request,
-particularly the constraints around masking and rendering safety.
+The JavaScript and CSS live in `src/`; the APEX exports under `plugin/` and
+`demo/` embed the built `dist/` files, so after changing `src/` run the
+build and the sync before committing. See [CONTRIBUTING.md](CONTRIBUTING.md)
+before opening a pull request, particularly the constraints around masking
+and rendering safety.
 
 ## Security
 

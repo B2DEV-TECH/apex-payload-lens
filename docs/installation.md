@@ -1,103 +1,196 @@
 # Installation
 
-PayloadLens ships as a standard Oracle APEX region plugin: a single
-`.sql` export file you import through Page Designer or SQL*Plus/SQLcl, plus
-its bundled JavaScript and CSS. There is no separate application server,
-no database objects beyond the plugin definition itself, and no external
-service dependency.
+PayloadLens ships as two files, installed in this order:
+
+1. `plugin/payload_lens_pkg.sql` — the PL/SQL package `payload_lens_pkg`
+   that renders the region. It goes into the application's **parsing
+   schema**.
+2. `plugin/region_type_plugin_b2devtech_payload_lens.sql` — the region-type
+   plugin itself (attributes plus the embedded JavaScript and CSS), in the
+   standard APEX plugin export format. It is imported into each
+   **application** that uses PayloadLens.
+
+A third file, `demo/payloadlens_demo_app.sql`, is a complete demo
+application (plugin included) that you can import into any workspace to see
+the region working before wiring it to your own data.
 
 ## Requirements
 
-- Oracle APEX **24.2 or later**. The plugin targets the modern (v2)
-  region-type plugin architecture and is actively verified against APEX
-  26.x during development.
-- A workspace and schema you have Page Designer / SQL Workshop access to.
-- No additional PL/SQL grants beyond what any other custom plugin needs
-  (the ability to install plugins into your workspace).
+- **Oracle APEX 26.1 or later.** The plugin and the demo application are
+  genuine APEX exports written by APEX 26.1.0 (`p_release => '26.1.0'`),
+  and APEX refuses to import an export produced by a release newer than the
+  one installed. APEX 26.1.0 is also the only release this version has been
+  installed and tested on. The package itself only uses long-standing APIs
+  (`apex_plugin`, `apex_plugin_util`, `apex_json`, `apex_css`,
+  `apex_javascript`), but it has not been exercised on older releases.
+- A workspace whose parsing schema can create packages (`CREATE PROCEDURE`).
+  No other database privileges are needed: the package reads nothing but
+  the region attributes and creates no tables, jobs, synonyms, or grants.
+- For the scripted route, [SQLcl](https://www.oracle.com/database/sqldeveloper/technologies/sqlcl/)
+  connected as the parsing schema. No `SYS` or `APEX_xxxxxx` access is
+  needed at any step.
 
-PayloadLens has no dependency on any other plugin, any Oracle Database
-option, or any JavaScript library — it is a single self-contained script and
-stylesheet.
+## Step 1 — install the PL/SQL package
 
-## Option 1 — Import via Page Designer / App Builder
+Connect to the application's parsing schema and run:
 
-1. Download the latest plugin export
-   (`plugin/payload_lens_plugin.sql`) from a
-   [release](https://github.com/B2DEV-TECH/apex-payload-lens/releases) or
-   from this repository.
-2. In your target application, go to **App Builder → Shared Components →
-   Plug-ins**.
-3. Click **Import**, choose the downloaded `.sql` file, and click **Next**.
-4. Review the import summary, then click **Install Plug-in**.
-
-The plugin is now available to every page in that application under
-**Region Type → PayloadLens**.
-
-## Option 2 — Install via SQLcl / SQL*Plus
-
-If you prefer scripting the install (for example, as part of an automated
-environment build):
-
-```sh
-sql -S your_schema/your_password@your_connect_string @plugin/payload_lens_plugin.sql
+```sql
+@plugin/payload_lens_pkg.sql
 ```
 
-Run this while connected as the schema that owns the target application
-(the same connection you would use for any other APEX component export).
-The script is idempotent in the sense that re-running it against the same
-application re-installs (updates) the plugin definition, matching the
-behavior of any other APEX plugin export.
+or, with SQLcl in one line:
 
-## Adding a PayloadLens region to a page
+```sh
+sql -S your_parsing_schema/your_password@your_connect_string @plugin/payload_lens_pkg.sql
+```
 
-1. In Page Designer, right-click the page's **Regions** node and choose
-   **Create Region**.
-2. Set **Type** to **PayloadLens**.
-3. Give the region a **Static ID** — PayloadLens uses this to build its DOM
-   mount point and to keep multiple PayloadLens regions on the same page
-   independent of each other, so it must be unique on the page.
-4. Under **Source**, choose how the region gets its JSON payload:
-   - **Static / SQL / PL-SQL Expression** — the normal APEX region source:
-     point it at a column, a `PL/SQL Expression`, or a `Function Body
-     returning SQL/CLOB`, whatever already returns your JSON text.
-   - **Page/Application Item** — point it at an existing item that holds
-     JSON text (for example, one populated by a preceding AJAX callback or
-     Dynamic Action).
-5. Adjust the **Display** and **Masking** attributes as needed — see
-   [configuration.md](configuration.md) for the full reference.
-6. Save and run the page.
+Verify:
 
-## Verifying the install
+```sql
+select object_name, object_type, status
+from   user_objects
+where  object_name = 'PAYLOAD_LENS_PKG';
 
-After adding a region, running the page should show the PayloadLens toolbar
-(view switch, search, copy) followed by either the rendered tree/code view
-of your payload, or one of the plugin's explicit empty/error states if the
-source resolved to nothing or to invalid JSON — see
-[architecture.md](architecture.md#parsing-model) for exactly what those
-states look like and when each one appears.
+-- PAYLOAD_LENS_PKG   PACKAGE        VALID
+-- PAYLOAD_LENS_PKG   PACKAGE BODY   VALID
+```
 
-If the region renders nothing at all (not even the toolbar), check that:
+The plugin's render function is `payload_lens_pkg.render`, resolved at run
+time through the application's parsing schema. If you prefer to keep the
+package in another schema, grant `EXECUTE` on it and create a synonym in the
+parsing schema (or change the plugin's *Render Procedure/Function Name*
+after importing it).
 
-- the region's **Static ID** is set (PayloadLens requires it to build its
-  mount point),
-- the browser console shows no JavaScript errors from another plugin or
-  page-level script that might be interfering with page load, and
-- you are running APEX 24.2 or later, per the [Requirements](#requirements)
-  above.
+## Step 2 — import the plugin
 
-## Trying it with the bundled demo data
+### Option A — App Builder
 
-This repository's [`demo/`](../demo) folder contains synthetic, non-real
-JSON fixtures (an "Invoice Processing Integration" example using only
-`example.com`/`example.test` data) you can paste directly into a region's
-**Source** as a `PL/SQL Expression` returning a CLOB literal, to try every
-feature — the tree view, code view, search, masking, and the invalid-JSON
-and empty-payload states — without needing a real integration in place.
-See each file's contents for what it demonstrates.
+1. Open the application, go to **Shared Components → Plug-ins** and click
+   **Import** (the same wizard is reachable from **Application → Import**
+   by choosing the file type *Plug-in*).
+2. Upload `plugin/region_type_plugin_b2devtech_payload_lens.sql` and finish
+   the wizard.
+3. The plugin now appears under **Shared Components → Plug-ins** as
+   **PayloadLens** (internal name `B2DEVTECH.PAYLOAD_LENS`, category
+   *Reports*, version `1.0.0`).
+
+The file is the unmodified output of APEX's own plugin export
+(`apex export -expComponents "PLUGIN:<id>"`), so it goes through the
+Builder's regular plugin import. The project's own verification of this
+release, however, was done through the scripted route below; the Builder
+route was not separately automated.
+
+### Option B — SQLcl / SQL\*Plus (scriptable)
+
+The export installs into whatever application `apex_application_install`
+points at. Connected as the parsing schema:
+
+```sql
+set define off
+begin
+    apex_application_install.set_workspace('YOUR_WORKSPACE');   -- workspace name
+    apex_application_install.set_application_id(100);           -- target application id
+    apex_application_install.generate_offset;
+end;
+/
+@plugin/region_type_plugin_b2devtech_payload_lens.sql
+```
+
+Running the same script again against the same application **replaces the
+plugin in place** (the export runs in `REPLACE` mode); regions already
+bound to `B2DEVTECH.PAYLOAD_LENS` keep working with the new version. That is
+also the upgrade path.
+
+## Step 3 — add a region
+
+1. In Page Designer create a region and set its **Type** to **PayloadLens**.
+2. Give it a **Static ID** (for example `ORDER_PAYLOAD`). The
+   [JavaScript API](javascript-api.md) addresses the instance by this id.
+3. Under the region's **Attributes** pick a **Source Type**:
+   - **Static Value** (default) — paste the JSON into **Source Static**.
+     Substitution strings such as `&P1_ITEM.` are replaced server-side
+     before the payload is parsed.
+   - **Item** — choose a page or application item in **Source Item**. Its
+     current value is read in the browser (`apex.item(name).getValue()`) on
+     init and on every `refresh()`, so the region follows the item without a
+     page submit.
+   - **PL/SQL Function Body** — write a function body in **Source PL/SQL
+     Function Body** that returns the JSON as `clob` (or `varchar2`), e.g.
+
+     ```sql
+     return (select payload_clob
+             from   integration_log
+             where  log_id = :P1_LOG_ID);
+     ```
+
+     The body runs server-side with the page's bind variables. If it raises,
+     the error message is delivered as the payload and shows up in the
+     region's "invalid JSON" state instead of breaking the page.
+4. Leave the remaining attributes at their defaults or tune them — every
+   attribute is described in [configuration.md](configuration.md).
+5. Save and run the page.
+
+## Verifying the installation
+
+On the running page you should see:
+
+- the PayloadLens toolbar (Tree / Code toggle, search box, Copy button) and
+  the metadata bar above the rendered payload;
+- in the browser's Network tab, `payload-lens.min.css` and
+  `payload-lens.min.js` served from `.../files/plugin/<plugin id>/v1/`,
+  both HTTP 200;
+- keys such as `cardNumber`, `token`, or `apiKey` rendered masked when
+  masking is enabled.
+
+If the region renders empty, run the page in Debug mode and look for
+`payload_lens_pkg` in the debug log. The usual causes are the package not
+being installed (or invalid) in the parsing schema, or a PL/SQL function
+body that does not end with a `return`.
+
+## Demo application
+
+`demo/payloadlens_demo_app.sql` is a full application export (alias
+`PAYLOADLENS_DEMO`, Universal Theme, *No Authentication*, plugin embedded)
+whose page 1 renders a synthetic `order.created` webhook with masking
+enabled for `cardNumber, token, apiKey, webhookSignature, authCode`. Every
+value in it is invented (`example.com` addresses only).
+
+Import it as a **new** application:
+
+- **App Builder:** **Application → Import**, upload
+  `demo/payloadlens_demo_app.sql` (file type *Database Application*), and
+  in the install step choose a new application id and your parsing schema.
+- **SQLcl**, connected as the parsing schema (the id / alias / schema lines
+  are optional — omit them to keep the values stored in the export):
+
+  ```sql
+  set define off
+  begin
+      apex_application_install.set_workspace('YOUR_WORKSPACE');
+      apex_application_install.set_schema('YOUR_PARSING_SCHEMA');
+      apex_application_install.set_application_id(101);
+      apex_application_install.set_application_alias('PAYLOADLENS_DEMO');
+      apex_application_install.generate_offset;
+  end;
+  /
+  @demo/payloadlens_demo_app.sql
+  ```
+
+Then make sure `payload_lens_pkg` is installed in that parsing schema
+(Step 1) and run the application — with ORDS the friendly URL is
+`/ords/r/<workspace-path-prefix>/payloadlens_demo/1` (the path prefix
+defaults to the workspace name in lower case).
+
+The JSON fixtures in `demo/` (an invoice request/response pair, an
+integration error, a deeply nested example, and an intentionally invalid
+file) are the same kind of synthetic content, ready to paste into a
+**Static Value** region.
 
 ## Uninstalling
 
-**Shared Components → Plug-ins**, select **PayloadLens**, and click
-**Delete**. APEX prevents deleting a plugin that is still in use by an
-existing region — remove or change the type of any PayloadLens regions
-first.
+1. Delete (or change the type of) every region that uses PayloadLens —
+   APEX will not delete a plugin that is still in use.
+2. **Shared Components → Plug-ins → PayloadLens → Delete**.
+3. In the parsing schema: `drop package payload_lens_pkg;`
+
+Nothing else was created by the installation.
