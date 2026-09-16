@@ -36,9 +36,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the PL/SQL render package in `plugin/payload_lens_pkg.sql`; three payload
   sources: Static Value, Item, and PL/SQL Function Body.
 - A complete demo application export (`demo/payloadlens_demo_app.sql`,
-  APEX 26.1) rendering a synthetic `order.created` webhook with masking on,
-  plus synthetic JSON fixtures (`demo/*.json`) built around an "Invoice
-  Processing Integration" example — all `example.com`/`example.test` data.
+  APEX 26.1) with three pages: a synthetic `order.created` webhook with
+  masking on, an *Integration Log* (classic report whose rows load their
+  payload into an *Item*-sourced region through a Dynamic Action and
+  `payloadLens.refresh()`, no page submit) and a *Request vs Response*
+  comparison with two regions side by side — plus synthetic JSON fixtures
+  (`demo/*.json`) built around an "Invoice Processing Integration" example.
+  All `example.com`/`example.test` data.
 - `scripts/sync-plugin-files.mjs`, which embeds `dist/` into both APEX
   exports byte-for-byte and doubles as a drift check
   (`npm run check:plugin-files`).

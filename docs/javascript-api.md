@@ -113,6 +113,14 @@ Typical use: wire this into an APEX Dynamic Action's "True" action (Execute
 JavaScript Code) after an AJAX call that updates the underlying page item, so
 the viewer reflects a newly received payload without a full page reload.
 
+The *Integration Log* page of the demo application
+(`demo/payloadlens_demo_app.sql`, page 2) is a complete working example of
+this pattern: a click on a report row sets a hidden item, a PL/SQL action
+fills a second hidden item with that row's payload
+(`apex_region.open_query_context` with an equality filter on the row id),
+and a JavaScript action calls `payloadLens.refresh('LOG_PAYLOAD')` on an
+*Item*-sourced region — no page submit.
+
 ## setPayload(staticId, value)
 
 Explicitly renders a new payload, bypassing whatever `sourceType`,

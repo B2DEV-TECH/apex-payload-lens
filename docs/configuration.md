@@ -63,11 +63,17 @@ key, arrays) is described in [masking.md](masking.md).
   *Sensitive Keys* together with the built-in names you still need (the
   demo application uses `cardNumber, token, apiKey, webhookSignature,
   authCode`), and keep *Display Mode* at Tree View with *Initial Expand
-  Depth* at `2` so the top-level structure is readable at a glance.
+  Depth* at `2` so the top-level structure is readable at a glance. Page 2
+  of the demo application (*Integration Log*) is this setup end to end: a
+  classic report whose rows load their payload into an *Item*-sourced
+  region through a Dynamic Action and `payloadLens.refresh()`, with no
+  page submit.
 - **Developer-only debug page**: Code View, *Initial Expand Depth* `ALL`,
   and a larger *Max Display Bytes* (up to the 5 MiB ceiling). Turning
   masking off is only appropriate when the page itself is restricted to
   developers.
 - **Request and response side by side**: two regions with different Static
   IDs. Each has its own attributes and its own JavaScript instance — see
-  [javascript-api.md](javascript-api.md).
+  [javascript-api.md](javascript-api.md). Page 3 of the demo application
+  (*Request vs Response*) does exactly this with the
+  `demo/invoice-request.json` / `demo/invoice-response.json` pair.

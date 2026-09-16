@@ -107,9 +107,13 @@ That's it; PayloadLens handles parsing, masking, and rendering from there.
 
 Want to see it working before wiring up a real data source?
 [`demo/payloadlens_demo_app.sql`](demo/payloadlens_demo_app.sql) is a
-complete demo application (plugin included) that renders a synthetic
-`order.created` webhook with masking on. The [`demo/`](demo) folder also has
-ready-made JSON fixtures (an "Invoice Processing Integration" example using
+complete demo application (plugin included) with three pages: a synthetic
+`order.created` webhook with masking on, an **Integration Log** whose report
+rows load their payload into an *Item*-sourced region through a Dynamic
+Action and `payloadLens.refresh()` (no page submit), and a **Request vs
+Response** page with two regions side by side. The [`demo/`](demo) folder
+also has ready-made JSON fixtures (an "Invoice Processing Integration"
+example using
 only `example.com` / `example.test` data) covering a normal request/response
 pair, an error response, a deeply nested example, and an intentionally
 invalid JSON file — paste any of them into a **Static Value** region to see

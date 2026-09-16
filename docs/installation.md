@@ -151,9 +151,25 @@ body that does not end with a `return`.
 
 `demo/payloadlens_demo_app.sql` is a full application export (alias
 `PAYLOADLENS_DEMO`, Universal Theme, *No Authentication*, plugin embedded)
-whose page 1 renders a synthetic `order.created` webhook with masking
-enabled for `cardNumber, token, apiKey, webhookSignature, authCode`. Every
-value in it is invented (`example.com` addresses only).
+with three pages, all reachable from its navigation menu:
+
+- **Home** (page 1) — a synthetic `order.created` webhook in a *Static
+  Value* region with masking enabled for `cardNumber, token, apiKey,
+  webhookSignature, authCode`, plus the full toolbar (Tree / Code, search,
+  expand and collapse, Copy, per-node JSON path).
+- **Integration Log** (page 2) — a classic report over six invented
+  integration calls (an inline `WITH` clause, no table) next to an
+  *Item*-sourced region. Clicking **View** on a row runs a Dynamic Action
+  that stores the row id in a hidden item, reads that row's payload through
+  `apex_region.open_query_context` into a second hidden item, and calls
+  `payloadLens.refresh('LOG_PAYLOAD')` — the region re-renders without a
+  page submit. One row is a deliberately truncated body, to show the
+  invalid-JSON state.
+- **Request vs Response** (page 3) — two regions side by side showing the
+  `demo/invoice-request.json` / `demo/invoice-response.json` pair with the
+  built-in sensitive-key list (no *Sensitive Keys* override).
+
+Every value in it is invented (`example.com` addresses only).
 
 Import it as a **new** application:
 
@@ -177,14 +193,16 @@ Import it as a **new** application:
   ```
 
 Then make sure `payload_lens_pkg` is installed in that parsing schema
-(Step 1) and run the application — with ORDS the friendly URL is
-`/ords/r/<workspace-path-prefix>/payloadlens_demo/1` (the path prefix
-defaults to the workspace name in lower case).
+(Step 1) and run the application — with ORDS the friendly URLs are
+`/ords/r/<workspace-path-prefix>/payloadlens_demo/1`,
+`.../payloadlens_demo/integration-log` and
+`.../payloadlens_demo/request-vs-response` (the path prefix defaults to the
+workspace name in lower case).
 
-The JSON fixtures in `demo/` (an invoice request/response pair, an
-integration error, a deeply nested example, and an intentionally invalid
-file) are the same kind of synthetic content, ready to paste into a
-**Static Value** region.
+The JSON fixtures in `demo/` (an invoice request/response pair — the two
+files page 3 renders — an integration error, a deeply nested example, and
+an intentionally invalid file) are the same kind of synthetic content,
+ready to paste into a **Static Value** region.
 
 ## Uninstalling
 

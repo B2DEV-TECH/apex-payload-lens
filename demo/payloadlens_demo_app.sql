@@ -33,15 +33,18 @@ prompt APPLICATION 4471082935610274 - PayloadLens Demo
 -- Application Export:
 --   Application:     4471082935610274
 --   Name:            PayloadLens Demo
---   Date and Time:   17:04 Wednesday September 16, 2026
+--   Date and Time:   19:29 Wednesday September 16, 2026
 --   Exported By:     PAYLOADLENS
 --   Flashback:       0
 --   Export Type:     Application Export
---     Pages:                      1
---       Regions:                  2
+--     Pages:                      3
+--       Items:                    2
+--       Regions:                  8
+--       Dynamic Actions:          2
 --     Shared Components:
 --       Logic:
 --       Navigation:
+--         Lists:                  1
 --       Security:
 --         Authentication:         1
 --       User Interface:
@@ -95,6 +98,10 @@ wwv_imp_workspace.create_flow(
 ,p_theme_id=>42
 ,p_home_url=>'f?p=&APP_ID.:1:&SESSION.'
 ,p_theme_style_by_user_pref=>false
+,p_navigation_list_id=>wwv_flow_imp.id(6142307958201800)
+,p_navigation_list_position=>'SIDE'
+,p_navigation_list_template_id=>2469215554099805162
+,p_nav_list_template_options=>'#DEFAULT#'
 ,p_nav_bar_type=>'NAVBAR'
 );
 end;
@@ -745,6 +752,42 @@ wwv_flow_imp_shared.create_plugin_setting(
 );
 end;
 /
+prompt --application/shared_components/navigation/lists/demo_navigation
+begin
+wwv_flow_imp_shared.create_list(
+ p_id=>wwv_flow_imp.id(6142307958201800)
+,p_name=>'Demo Navigation'
+,p_static_id=>'demo-navigation'
+);
+wwv_flow_imp_shared.create_list_item(
+ p_id=>wwv_flow_imp.id(6142307958201801)
+,p_list_item_display_sequence=>10
+,p_list_item_link_text=>'Home'
+,p_static_id=>'home'
+,p_list_item_link_target=>'f?p=&APP_ID.:1:&SESSION.::&DEBUG.:::'
+,p_list_item_icon=>'fa-home'
+,p_list_item_current_type=>'TARGET_PAGE'
+);
+wwv_flow_imp_shared.create_list_item(
+ p_id=>wwv_flow_imp.id(6142307958201802)
+,p_list_item_display_sequence=>20
+,p_list_item_link_text=>'Integration Log'
+,p_static_id=>'integration-log'
+,p_list_item_link_target=>'f?p=&APP_ID.:2:&SESSION.::&DEBUG.:::'
+,p_list_item_icon=>'fa-exchange'
+,p_list_item_current_type=>'TARGET_PAGE'
+);
+wwv_flow_imp_shared.create_list_item(
+ p_id=>wwv_flow_imp.id(6142307958201803)
+,p_list_item_display_sequence=>30
+,p_list_item_link_text=>'Request vs Response'
+,p_static_id=>'request-vs-response'
+,p_list_item_link_target=>'f?p=&APP_ID.:3:&SESSION.::&DEBUG.:::'
+,p_list_item_icon=>'fa-columns'
+,p_list_item_current_type=>'TARGET_PAGE'
+);
+end;
+/
 prompt --application/shared_components/navigation/listentry
 begin
 null;
@@ -878,7 +921,7 @@ wwv_flow_imp_shared.create_authentication(
  p_id=>wwv_flow_imp.id(9451028837402210)
 ,p_name=>'No Authentication'
 ,p_static_id=>'no-authentication'
-,p_scheme_type=>'NATIVE_NO_AUTHENTICATION'
+,p_scheme_type=>'NATIVE_DAD'
 ,p_invalid_session_type=>'URL'
 ,p_invalid_session_url=>'f?p=&APP_ID.:1:&SESSION.::&DEBUG.:::'
 ,p_logout_url=>'f?p=&APP_ID.:1:&SESSION.::&DEBUG.:::'
@@ -912,9 +955,13 @@ wwv_flow_imp_page.create_page_plug(
 ,p_region_template_options=>'#DEFAULT#'
 ,p_plug_template=>4073835273271169698
 ,p_plug_display_sequence=>5
-,p_plug_source=>'<p><strong>PayloadLens</strong> renders JSON payloads from integrations and APIs as an interactive tree or code view. The region below shows a synthetic <em>order.created</em> webhook payload: every name, address and identifier in it is made up (exam'
-||'ple.com only). The keys configured as sensitive (<code>cardNumber</code>, <code>token</code>, <code>apiKey</code>, <code>webhookSignature</code>, <code>authCode</code>) are masked on screen. Use the toolbar to toggle masking, search the payload, copy'
-||' a node or expand and collapse the tree.</p>'
+,p_plug_source=>wwv_flow_string.join(wwv_flow_t_varchar2(
+'<p><strong>PayloadLens</strong> is a region plug-in that renders JSON payloads from integrations and APIs as an interactive tree or code view, masking the keys you declare as sensitive before anything reaches the screen.</p>',
+'<p>The region below shows a synthetic <em>order.created</em> webhook (invented data, <code>example.com</code> addresses only). Its <em>Sensitive Keys</em> attribute lists <code>cardNumber</code>, <code>token</code>, <code>apiKey</code>, <code>webhook'
+||'Signature</code> and <code>authCode</code>, so those values are masked on screen. Masking is configured by the developer on the region; there is no switch for the end user.</p>',
+'<p>Try the toolbar: switch between <strong>Tree</strong> and <strong>Code</strong>, search the payload and step through the matches, expand or collapse everything, and <strong>Copy</strong> the masked payload to the clipboard. In the tree, the <stron'
+||'g>path</strong> button next to a node copies its JSON path.</p>',
+'<p>Use the navigation menu to open <strong>Integration Log</strong>, where clicking a report row loads that row''s payload into the region without a page submit, and <strong>Request vs Response</strong>, where two regions sit side by side.</p>'))
 ,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
   'output_as', 'HTML')).to_clob
 );
@@ -983,6 +1030,631 @@ wwv_flow_imp_page.create_page_plug(
   'attribute_12', 'N',
   'attribute_13', '*',
   'attribute_14', '1048576')).to_clob
+);
+end;
+/
+prompt --application/pages/page_00002
+begin
+wwv_flow_imp_page.create_page(
+ p_id=>2
+,p_name=>'Integration Log'
+,p_alias=>'INTEGRATION-LOG'
+,p_step_title=>'Integration Log'
+,p_autocomplete_on_off=>'OFF'
+,p_step_template=>4073832297226169690
+,p_page_is_public_y_n=>'Y'
+,p_page_component_map=>'13'
+);
+wwv_flow_imp_page.create_page_plug(
+ p_id=>wwv_flow_imp.id(6142307958201805)
+,p_plug_name=>'How this page works'
+,p_static_id=>'how-this-page-works'
+,p_region_name=>'LOG_INTRO'
+,p_region_template_options=>'#DEFAULT#'
+,p_plug_template=>4073835273271169698
+,p_plug_display_sequence=>5
+,p_plug_source=>'<p>A support view over a synthetic integration log: six invented calls (<code>example.com</code> only) inlined as a <code>WITH</code> clause in the report''s SQL, so no table is involved. Click <strong>View</strong> on a row: a Dynamic Action stores t'
+||'he row id, runs a PL/SQL block that reads that row''s payload through <code>apex_region.open_query_context</code> into the hidden item <code>P2_PAYLOAD</code>, then calls <code>payloadLens.refresh(''LOG_PAYLOAD'')</code>. The region''s <em>Source Type</e'
+||'m> is <em>Item</em>, so it re-reads the item and re-renders without a page submit. Log 1005 is a truncated body, kept on purpose to show the invalid-JSON state.</p>'
+,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
+  'output_as', 'HTML')).to_clob
+);
+wwv_flow_imp_page.create_report_region(
+ p_id=>wwv_flow_imp.id(6142307958201810)
+,p_name=>'Integration Log'
+,p_static_id=>'log-report'
+,p_region_name=>'LOG_REPORT'
+,p_template=>4073835273271169698
+,p_display_sequence=>10
+,p_region_template_options=>'#DEFAULT#'
+,p_component_template_options=>'#DEFAULT#'
+,p_source_type=>'NATIVE_SQL_REPORT'
+,p_query_type=>'SQL'
+,p_source=>wwv_flow_string.join(wwv_flow_t_varchar2(
+'-- Synthetic integration log. No table: six invented calls (example.com only)',
+'-- inlined as a WITH clause so the demo stays a single import file.',
+'with log_entries (log_id, received_at, direction, event_name, http_status, result, payload) as (',
+'    select 1001, to_date(''2026-09-14 07:58:02'', ''YYYY-MM-DD HH24:MI:SS''), ''Outbound'', ''POST https://api.example.com/v1/payments'', 201, ''Success'',',
+'           to_clob(q''~{',
+'  "requestId": "req_demo_00074512",',
+'  "status": 201,',
+'  "body": {',
+'    "paymentId": "pay_demo_00074512",',
+'    "status": "AUTHORIZED",',
+'    "amount": 1284.50,',
+'    "currency": "USD",',
+'    "card": { "brand": "visa", "last4": "4242", "cardNumber": "4242424242424242" },',
+'    "token": "tok_demo_2a4c6e8g0i2k",',
+'    "authCode": "Z9Y8X7",',
+'    "links": {',
+'      "self": "https://api.example.com/v1/payments/pay_demo_00074512",',
+'      "capture": "https://api.example.com/v1/payments/pay_demo_00074512/capture"',
+'    }',
+'  },',
+'  "headers": {',
+'    "content-type": "application/json",',
+'    "x-request-id": "req_demo_00074512",',
+'    "x-ratelimit-remaining": "998"',
+'  }',
+'}~'')',
+'      from dual',
+'    union all',
+'    select 1002, to_date(''2026-09-14 07:58:05'', ''YYYY-MM-DD HH24:MI:SS''), ''Inbound'', ''payment.captured'', 200, ''Processed'',',
+'           to_clob(q''~{',
+'  "eventId": "evt_c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8",',
+'  "eventType": "payment.captured",',
+'  "occurredAt": "2026-09-14T07:58:05Z",',
+'  "payment": {',
+'    "paymentId": "pay_demo_00074512",',
+'    "orderId": "ORD-2026-000911",',
+'    "amount": 1284.50,',
+'    "currency": "USD",',
+'    "status": "CAPTURED",',
+'    "card": { "brand": "visa", "last4": "4242", "expiry": "12/28", "cardNumber": "4242424242424242" },',
+'    "token": "tok_demo_2a4c6e8g0i2k",',
+'    "authCode": "Z9Y8X7"',
+'  },',
+'  "processor": { "name": "ExamplePay", "traceId": "trace-77a1c2-example", "latencyMs": 412 }',
+'}~'')',
+'      from dual',
+'    union all',
+'    select 1003, to_date(''2026-09-14 08:04:40'', ''YYYY-MM-DD HH24:MI:SS''), ''Outbound'', ''POST https://api.example.com/v2/invoices'', 422, ''Rejected'',',
+'           to_clob(q''~{',
+'  "eventId": "evt_ff112233-4455-6677-8899-aabbccddeeff",',
+'  "eventType": "invoice.create.response",',
+'  "issuedAt": "2026-09-10T14:35:41Z",',
+'  "correlationId": "corr-20260910-000483",',
+'  "status": "REJECTED",',
+'  "httpStatusCode": 422,',
+'  "error": {',
+'    "code": "VALIDATION_FAILED",',
+'    "message": "One or more invoice fields failed validation.",',
+'    "details": [',
+'      {',
+'        "field": "invoice.customer.taxId",',
+'        "issue": "TaxId does not match expected format for country US."',
+'      },',
+'      {',
+'        "field": "invoice.lineItems[1].unitPrice",',
+'        "issue": "unitPrice must be greater than zero."',
+'      }',
+'    ],',
+'    "traceId": "trace-8827af10-example",',
+'    "retryable": false',
+'  },',
+'  "authentication": {',
+'    "authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.example.rejected-request-token"',
+'  }',
+'}~'')',
+'      from dual',
+'    union all',
+'    select 1004, to_date(''2026-09-14 08:09:17'', ''YYYY-MM-DD HH24:MI:SS''), ''Inbound'', ''customer.updated'', 200, ''Processed'',',
+'           to_clob(q''~{',
+'  "eventId": "evt_5d2c8a1b7e9f4c3d2a1b0c9d8e7f6a5b",',
+'  "eventType": "customer.updated",',
+'  "occurredAt": "2026-09-14T08:09:17Z",',
+'  "customer": {',
+'    "customerId": "CUST-10029",',
+'    "name": "Jordan Example",',
+'    "email": "jordan@example.com",',
+'    "phone": "+1-555-0100",',
+'    "taxId": "98-7654321",',
+'    "address": {',
+'      "line1": "500 Example Parkway",',
+'      "city": "Springfield",',
+'      "state": "IL",',
+'      "postalCode": "62701",',
+'      "country": "US"',
+'    },',
+'    "preferences": { "newsletter": false, "language": "en-US" }',
+'  },',
+'  "changes": [ "email", "phone" ]',
+'}~'')',
+'      from dual',
+'    union all',
+'    select 1005, to_date(''2026-09-14 08:11:59'', ''YYYY-MM-DD HH24:MI:SS''), ''Inbound'', ''order.created'', 400, ''Malformed'',',
+'           to_clob(q''~{',
+'  "eventId": "evt_0b7c2d9e1f3a4b5c6d7e8f9a0b1c2d3e",',
+'  "eventType": "order.created",',
+'  "occurredAt": "2026-09-14T08:11:59Z",',
+'  "order": {',
+'    "orderId": "ORD-2026-000912",',
+'    "customer": { "name": "Jordan Example", "email": "jordan@example.com"',
+'~'')',
+'      from dual',
+'    union all',
+'    select 1006, to_date(''2026-09-14 08:12:31'', ''YYYY-MM-DD HH24:MI:SS''), ''Inbound'', ''order.created'', 200, ''Processed'',',
+'           to_clob(q''~{',
+'  "eventId": "evt_8f14e45fceea167a5a36dedd4bea2543",',
+'  "eventType": "order.created",',
+'  "occurredAt": "2026-09-14T08:12:31Z",',
+'  "source": {',
+'    "system": "Storefront",',
+'    "environment": "sandbox",',
+'    "webhookSignature": "sha256=3b1f9c0d4e5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c"',
+'  },',
+'  "order": {',
+'    "orderId": "ORD-2026-000913",',
+'    "currency": "USD",',
+'    "total": 249.90,',
+'    "customer": {',
+'      "customerId": "CUST-10029",',
+'      "name": "Jordan Example",',
+'      "email": "jordan@example.com"',
+'    },',
+'    "items": [',
+'      { "sku": "LENS-KIT-01", "description": "Payload inspection kit", "quantity": 1, "unitPrice": 199.90 },',
+'      { "sku": "LENS-CASE-02", "description": "Protective case", "quantity": 2, "unitPrice": 25.00 }',
+'    ],',
+'    "payment": {',
+'      "method": "card",',
+'      "cardNumber": "4111111111111111",',
+'      "token": "tok_demo_9f1e2d3c4b5a",',
+'      "authCode": "A1B2C3"',
+'    }',
+'  },',
+'  "metadata": {',
+'    "apiKey": "key_demo_not_a_real_secret_000001",',
+'    "retryCount": 0',
+'  }',
+'}~'')',
+'      from dual',
+')',
+'select log_id,',
+'       received_at,',
+'       direction,',
+'       event_name,',
+'       http_status,',
+'       result,',
+'       payload,',
+'       ''View'' as view_action',
+'  from log_entries',
+' order by received_at desc'))
+,p_query_row_template=>2540130677583398057
+,p_query_num_rows=>15
+,p_query_options=>'DERIVED_REPORT_COLUMNS'
+,p_query_show_nulls_as=>'-'
+,p_query_no_data_found=>'No integration calls recorded.'
+,p_query_row_count_max=>500
+,p_csv_output=>'N'
+,p_prn_output=>'N'
+,p_sort_null=>'L'
+,p_plug_query_strip_html=>'N'
+);
+wwv_flow_imp_page.create_report_columns(
+ p_id=>wwv_flow_imp.id(6142307958201813)
+,p_query_column_id=>3
+,p_column_alias=>'DIRECTION'
+,p_column_display_sequence=>30
+,p_column_heading=>'Direction'
+,p_heading_alignment=>'LEFT'
+,p_derived_column=>'N'
+,p_include_in_export=>'Y'
+);
+wwv_flow_imp_page.create_report_columns(
+ p_id=>wwv_flow_imp.id(6142307958201814)
+,p_query_column_id=>4
+,p_column_alias=>'EVENT_NAME'
+,p_column_display_sequence=>40
+,p_column_heading=>'Event / Endpoint'
+,p_heading_alignment=>'LEFT'
+,p_derived_column=>'N'
+,p_include_in_export=>'Y'
+);
+wwv_flow_imp_page.create_report_columns(
+ p_id=>wwv_flow_imp.id(6142307958201815)
+,p_query_column_id=>5
+,p_column_alias=>'HTTP_STATUS'
+,p_column_display_sequence=>50
+,p_column_heading=>'HTTP'
+,p_column_alignment=>'RIGHT'
+,p_heading_alignment=>'RIGHT'
+,p_derived_column=>'N'
+,p_include_in_export=>'Y'
+);
+wwv_flow_imp_page.create_report_columns(
+ p_id=>wwv_flow_imp.id(6142307958201811)
+,p_query_column_id=>1
+,p_column_alias=>'LOG_ID'
+,p_column_display_sequence=>10
+,p_column_heading=>'Log'
+,p_use_as_row_header=>'Y'
+,p_column_alignment=>'RIGHT'
+,p_heading_alignment=>'RIGHT'
+,p_derived_column=>'N'
+,p_include_in_export=>'Y'
+);
+wwv_flow_imp_page.create_report_columns(
+ p_id=>wwv_flow_imp.id(6142307958201817)
+,p_query_column_id=>7
+,p_column_alias=>'PAYLOAD'
+,p_column_display_sequence=>70
+,p_hidden_column=>'Y'
+,p_derived_column=>'N'
+);
+wwv_flow_imp_page.create_report_columns(
+ p_id=>wwv_flow_imp.id(6142307958201812)
+,p_query_column_id=>2
+,p_column_alias=>'RECEIVED_AT'
+,p_column_display_sequence=>20
+,p_column_heading=>'Received'
+,p_column_format=>'YYYY-MM-DD HH24:MI:SS'
+,p_heading_alignment=>'LEFT'
+,p_derived_column=>'N'
+,p_include_in_export=>'Y'
+);
+wwv_flow_imp_page.create_report_columns(
+ p_id=>wwv_flow_imp.id(6142307958201816)
+,p_query_column_id=>6
+,p_column_alias=>'RESULT'
+,p_column_display_sequence=>60
+,p_column_heading=>'Result'
+,p_heading_alignment=>'LEFT'
+,p_derived_column=>'N'
+,p_include_in_export=>'Y'
+);
+wwv_flow_imp_page.create_report_columns(
+ p_id=>wwv_flow_imp.id(6142307958201818)
+,p_query_column_id=>8
+,p_column_alias=>'VIEW_ACTION'
+,p_column_display_sequence=>80
+,p_column_heading=>'Payload'
+,p_column_html_expression=>'<button type="button" class="t-Button t-Button--small t-Button--simple pl-demo-view" data-log-id="#LOG_ID#" data-label="#EVENT_NAME#" aria-pressed="false">#VIEW_ACTION#</button>'
+,p_column_alignment=>'CENTER'
+,p_derived_column=>'N'
+,p_include_in_export=>'N'
+);
+wwv_flow_imp_page.create_page_plug(
+ p_id=>wwv_flow_imp.id(6142307958201830)
+,p_plug_name=>'Payload'
+,p_static_id=>'payload'
+,p_region_name=>'LOG_PAYLOAD'
+,p_region_template_options=>'#DEFAULT#'
+,p_plug_template=>4073835273271169698
+,p_plug_display_sequence=>20
+,p_plug_item_display_point=>'ABOVE'
+,p_location=>null
+,p_plug_source_type=>'PLUGIN_B2DEVTECH.PAYLOAD_LENS'
+,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
+  'attribute_01', 'ITEM',
+  'attribute_03', 'P2_PAYLOAD',
+  'attribute_05', 'tree',
+  'attribute_06', '2',
+  'attribute_07', 'Y',
+  'attribute_08', 'Y',
+  'attribute_09', 'Y',
+  'attribute_10', 'Y',
+  'attribute_11', 'cardNumber, token, apiKey, secret, authCode, authorization, webhookSignature, email, taxId, password',
+  'attribute_12', 'N',
+  'attribute_13', '*',
+  'attribute_14', '1048576')).to_clob
+);
+wwv_flow_imp_page.create_page_item(
+ p_id=>wwv_flow_imp.id(6142307958201820)
+,p_name=>'P2_LOG_ID'
+,p_item_sequence=>10
+,p_item_plug_id=>wwv_flow_imp.id(6142307958201810)
+,p_use_cache_before_default=>'NO'
+,p_source_type=>'ALWAYS_NULL'
+,p_display_as=>'NATIVE_HIDDEN'
+,p_encrypt_session_state_yn=>'N'
+,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
+  'value_protected', 'N')).to_clob
+);
+wwv_flow_imp_page.create_page_item(
+ p_id=>wwv_flow_imp.id(6142307958201821)
+,p_name=>'P2_PAYLOAD'
+,p_item_sequence=>20
+,p_item_plug_id=>wwv_flow_imp.id(6142307958201810)
+,p_use_cache_before_default=>'NO'
+,p_source_type=>'ALWAYS_NULL'
+,p_display_as=>'NATIVE_HIDDEN'
+,p_encrypt_session_state_yn=>'N'
+,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
+  'value_protected', 'N')).to_clob
+);
+wwv_flow_imp_page.create_page_da_event(
+ p_id=>wwv_flow_imp.id(6142307958201850)
+,p_name=>'Show the first payload on load'
+,p_static_id=>'show-the-first-payload-on-load'
+,p_event_sequence=>20
+,p_bind_type=>'bind'
+,p_execution_type=>'IMMEDIATE'
+,p_bind_event_type=>'ready'
+);
+wwv_flow_imp_page.create_page_da_action(
+ p_id=>wwv_flow_imp.id(6142307958201851)
+,p_event_id=>wwv_flow_imp.id(6142307958201850)
+,p_event_result=>'TRUE'
+,p_action_sequence=>10
+,p_name=>'Click the first View button'
+,p_static_id=>'click-the-first-view-button'
+,p_action=>'NATIVE_JAVASCRIPT_CODE'
+,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
+  'js_code', wwv_flow_string.join(wwv_flow_t_varchar2(
+    '// Show the most recent entry as soon as the page loads.',
+    '$( ".pl-demo-view" ).first().trigger( "click" );')))).to_clob
+);
+wwv_flow_imp_page.create_page_da_event(
+ p_id=>wwv_flow_imp.id(6142307958201840)
+,p_name=>'View payload'
+,p_static_id=>'view-payload'
+,p_event_sequence=>10
+,p_triggering_element_type=>'JQUERY_SELECTOR'
+,p_triggering_element=>'.pl-demo-view'
+,p_bind_type=>'bind'
+,p_execution_type=>'IMMEDIATE'
+,p_bind_event_type=>'click'
+);
+wwv_flow_imp_page.create_page_da_action(
+ p_id=>wwv_flow_imp.id(6142307958201842)
+,p_event_id=>wwv_flow_imp.id(6142307958201840)
+,p_event_result=>'TRUE'
+,p_action_sequence=>20
+,p_execute_on_page_init=>'N'
+,p_name=>'Read the payload into P2_PAYLOAD'
+,p_static_id=>'read-the-payload-into-p2-payload'
+,p_action=>'NATIVE_EXECUTE_PLSQL_CODE'
+,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
+  'items_to_return', 'P2_PAYLOAD',
+  'items_to_submit', 'P2_LOG_ID',
+  'language', 'PLSQL',
+  'plsql_code', wwv_flow_string.join(wwv_flow_t_varchar2(
+    'declare',
+    '    l_context apex_exec.t_context;',
+    '    l_filters apex_exec.t_filters;',
+    'begin',
+    '    -- Reuse the report''s own query instead of duplicating it: filter the',
+    '    -- region LOG_REPORT by the clicked LOG_ID and read the PAYLOAD column.',
+    '    apex_exec.add_filter(',
+    '        p_filters     => l_filters,',
+    '        p_filter_type => apex_exec.c_filter_eq,',
+    '        p_column_name => ''LOG_ID'',',
+    '        p_value       => to_number( :P2_LOG_ID ) );',
+    '',
+    '    l_context := apex_region.open_query_context(',
+    '        p_page_id            => :APP_PAGE_ID,',
+    '        p_static_id          => ''log-report'',',
+    '        p_additional_filters => l_filters );',
+    '',
+    '    if apex_exec.next_row( l_context ) then',
+    '        :P2_PAYLOAD := apex_exec.get_clob( l_context, ''PAYLOAD'' );',
+    '    else',
+    '        :P2_PAYLOAD := null;',
+    '    end if;',
+    '',
+    '    apex_exec.close( l_context );',
+    'exception',
+    '    when others then',
+    '        apex_exec.close( l_context );',
+    '        raise;',
+    'end;')),
+  'show_processing', 'Y')).to_clob
+,p_wait_for_result=>'Y'
+);
+wwv_flow_imp_page.create_page_da_action(
+ p_id=>wwv_flow_imp.id(6142307958201843)
+,p_event_id=>wwv_flow_imp.id(6142307958201840)
+,p_event_result=>'TRUE'
+,p_action_sequence=>30
+,p_execute_on_page_init=>'N'
+,p_name=>'Refresh the PayloadLens region'
+,p_static_id=>'refresh-the-payloadlens-region'
+,p_action=>'NATIVE_JAVASCRIPT_CODE'
+,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
+  'js_code', wwv_flow_string.join(wwv_flow_t_varchar2(
+    '// P2_PAYLOAD was just returned by the PL/SQL action: re-read it and re-render.',
+    'payloadLens.refresh( "LOG_PAYLOAD" );',
+    '',
+    '// Mark the selected row''s button and say which log is on screen.',
+    '$( ".pl-demo-view" ).attr( "aria-pressed", "false" );',
+    '$( this.triggeringElement ).attr( "aria-pressed", "true" );',
+    'var heading = document.getElementById( "LOG_PAYLOAD_heading" );',
+    'if ( heading ) {',
+    '    heading.textContent = "Payload of log " + $( this.triggeringElement ).attr( "data-log-id" )',
+    '        + " - " + $( this.triggeringElement ).attr( "data-label" );',
+    '}')))).to_clob
+);
+wwv_flow_imp_page.create_page_da_action(
+ p_id=>wwv_flow_imp.id(6142307958201841)
+,p_event_id=>wwv_flow_imp.id(6142307958201840)
+,p_event_result=>'TRUE'
+,p_action_sequence=>10
+,p_execute_on_page_init=>'N'
+,p_name=>'Store the clicked log id'
+,p_static_id=>'store-the-clicked-log-id'
+,p_action=>'NATIVE_SET_VALUE'
+,p_affected_elements_type=>'ITEM'
+,p_affected_elements=>'P2_LOG_ID'
+,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
+  'js_expression', '$( this.triggeringElement ).attr( "data-log-id" )',
+  'suppress_change_event', 'N',
+  'type', 'JAVASCRIPT_EXPRESSION')).to_clob
+,p_wait_for_result=>'Y'
+);
+end;
+/
+prompt --application/pages/page_00003
+begin
+wwv_flow_imp_page.create_page(
+ p_id=>3
+,p_name=>'Request vs Response'
+,p_alias=>'REQUEST-VS-RESPONSE'
+,p_step_title=>'Request vs Response'
+,p_autocomplete_on_off=>'OFF'
+,p_step_template=>4073832297226169690
+,p_page_is_public_y_n=>'Y'
+,p_page_component_map=>'13'
+);
+wwv_flow_imp_page.create_page_plug(
+ p_id=>wwv_flow_imp.id(6142307958201861)
+,p_plug_name=>'Request - POST /v2/invoices'
+,p_static_id=>'request-post-v2-invoices'
+,p_region_name=>'INVOICE_REQUEST'
+,p_region_template_options=>'#DEFAULT#'
+,p_plug_template=>4073835273271169698
+,p_plug_display_sequence=>10
+,p_plug_grid_column_span=>6
+,p_plug_item_display_point=>'ABOVE'
+,p_location=>null
+,p_plug_source_type=>'PLUGIN_B2DEVTECH.PAYLOAD_LENS'
+,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
+  'attribute_01', 'STATIC',
+  'attribute_02', wwv_flow_string.join(wwv_flow_t_varchar2(
+    '{',
+    '  "eventId": "evt_8f3c1a2e-7b4d-4e11-9c2a-1a2b3c4d5e6f",',
+    '  "eventType": "invoice.create.request",',
+    '  "issuedAt": "2026-09-10T14:32:07Z",',
+    '  "source": {',
+    '    "system": "OrderManagement",',
+    '    "endpoint": "https://api.example.com/v2/invoices",',
+    '    "correlationId": "corr-20260910-000482"',
+    '  },',
+    '  "authentication": {',
+    '    "apikey": "example-fake-api-key-not-a-real-secret-000000",',
+    '    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example.payload"',
+    '  },',
+    '  "invoice": {',
+    '    "invoiceNumber": "INV-2026-004821",',
+    '    "currency": "USD",',
+    '    "totalAmount": 1284.50,',
+    '    "dueDate": "2026-10-10",',
+    '    "customer": {',
+    '      "customerId": "CUST-10029",',
+    '      "name": "Acme Distribution LLC",',
+    '      "email": "billing@example.com",',
+    '      "taxId": "98-7654321",',
+    '      "billingAddress": {',
+    '        "line1": "500 Example Parkway",',
+    '        "city": "Springfield",',
+    '        "state": "IL",',
+    '        "postalCode": "62701",',
+    '        "country": "US"',
+    '      }',
+    '    },',
+    '    "lineItems": [',
+    '      {',
+    '        "sku": "WMS-PALLET-STD",',
+    '        "description": "Standard pallet handling, September 2026",',
+    '        "quantity": 120,',
+    '        "unitPrice": 8.75,',
+    '        "amount": 1050.00',
+    '      },',
+    '      {',
+    '        "sku": "WMS-STORAGE-CU",',
+    '        "description": "Cold storage, per cubic unit",',
+    '        "quantity": 45,',
+    '        "unitPrice": 5.21,',
+    '        "amount": 234.50',
+    '      }',
+    '    ],',
+    '    "paymentInstructions": {',
+    '      "method": "ACH",',
+    '      "accountNumber": "0000123456789",',
+    '      "routingNumber": "021000021",',
+    '      "bankAccount": "Example National Bank ****6789"',
+    '    }',
+    '  },',
+    '  "metadata": {',
+    '    "retryCount": 0,',
+    '    "idempotencyKey": "idem-8f3c1a2e-req"',
+    '  }',
+    '}')),
+  'attribute_05', 'tree',
+  'attribute_06', '2',
+  'attribute_07', 'Y',
+  'attribute_08', 'Y',
+  'attribute_09', 'Y',
+  'attribute_10', 'Y',
+  'attribute_12', 'N',
+  'attribute_13', '*',
+  'attribute_14', '1048576')).to_clob
+);
+wwv_flow_imp_page.create_page_plug(
+ p_id=>wwv_flow_imp.id(6142307958201862)
+,p_plug_name=>'Response - 201 Created'
+,p_static_id=>'response-201-created'
+,p_region_name=>'INVOICE_RESPONSE'
+,p_region_template_options=>'#DEFAULT#'
+,p_plug_template=>4073835273271169698
+,p_plug_display_sequence=>20
+,p_plug_new_grid_row=>false
+,p_plug_grid_column_span=>6
+,p_plug_item_display_point=>'ABOVE'
+,p_location=>null
+,p_plug_source_type=>'PLUGIN_B2DEVTECH.PAYLOAD_LENS'
+,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
+  'attribute_01', 'STATIC',
+  'attribute_02', wwv_flow_string.join(wwv_flow_t_varchar2(
+    '{',
+    '  "eventId": "evt_2b6f9d0a-1122-4a55-8899-aabbccddeeff",',
+    '  "eventType": "invoice.create.response",',
+    '  "issuedAt": "2026-09-10T14:32:09Z",',
+    '  "correlationId": "corr-20260910-000482",',
+    '  "status": "ACCEPTED",',
+    '  "httpStatusCode": 201,',
+    '  "invoice": {',
+    '    "invoiceId": "inv_00d4821",',
+    '    "invoiceNumber": "INV-2026-004821",',
+    '    "status": "PENDING_PAYMENT",',
+    '    "totalAmount": 1284.50,',
+    '    "currency": "USD",',
+    '    "createdAt": "2026-09-10T14:32:08Z",',
+    '    "hostedInvoiceUrl": "https://billing.example.com/invoices/inv_00d4821",',
+    '    "customer": {',
+    '      "customerId": "CUST-10029",',
+    '      "email": "billing@example.com"',
+    '    }',
+    '  },',
+    '  "processing": {',
+    '    "processedBy": "invoice-service-07",',
+    '    "durationMs": 184,',
+    '    "warnings": []',
+    '  }',
+    '}')),
+  'attribute_05', 'tree',
+  'attribute_06', '2',
+  'attribute_07', 'Y',
+  'attribute_08', 'Y',
+  'attribute_09', 'Y',
+  'attribute_10', 'Y',
+  'attribute_12', 'N',
+  'attribute_13', '*',
+  'attribute_14', '1048576')).to_clob
+);
+wwv_flow_imp_page.create_page_plug(
+ p_id=>wwv_flow_imp.id(6142307958201860)
+,p_plug_name=>'Two regions, two instances'
+,p_static_id=>'two-regions-two-instances'
+,p_region_name=>'COMPARE_INTRO'
+,p_region_template_options=>'#DEFAULT#'
+,p_plug_template=>4073835273271169698
+,p_plug_display_sequence=>5
+,p_plug_source=>'<p>Two PayloadLens regions on one page, each with its own Static ID and its own JavaScript instance: the request an order-management system sent to <code>POST https://api.example.com/v2/invoices</code> and the <code>201 Created</code> response. They '
+||'are the same synthetic pair shipped as <code>demo/invoice-request.json</code> and <code>demo/invoice-response.json</code>. Both regions leave <em>Sensitive Keys</em> empty, so the built-in list applies: <code>apikey</code>, <code>token</code>, <code>'
+||'email</code>, <code>taxId</code>, <code>accountNumber</code>, <code>routingNumber</code> and <code>bankAccount</code> are masked in the request, and <code>email</code> in the response. Search and copy work independently on each side.</p>'
+,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
+  'output_as', 'HTML')).to_clob
 );
 end;
 /
