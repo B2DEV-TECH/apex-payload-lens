@@ -1,0 +1,359 @@
+/*!
+ * PayloadLens for Oracle APEX — styles
+ * https://github.com/B2DEV-TECH/apex-payload-lens
+ * Copyright (c) B2DEV TECH. Released under the MIT License.
+ *
+ * All rules are scoped under .payload-lens so the plugin never leaks
+ * styles into the rest of an APEX Universal Theme page.
+ */
+
+.payload-lens {
+  --pl-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --pl-font-ui: inherit;
+  --pl-bg: #ffffff;
+  --pl-bg-subtle: #f6f7f9;
+  --pl-bg-toolbar: #f0f1f4;
+  --pl-border: #d8dbe0;
+  --pl-text: #1f2328;
+  --pl-text-muted: #616872;
+  --pl-accent: #2f6fed;
+  --pl-accent-contrast: #ffffff;
+  --pl-key: #7a3e9d;
+  --pl-string: #1a7f37;
+  --pl-number: #0550ae;
+  --pl-boolean: #cf222e;
+  --pl-null: #6e7781;
+  --pl-error-bg: #fff1f0;
+  --pl-error-border: #ffa39e;
+  --pl-error-text: #82251f;
+  --pl-match-bg: #fff3b0;
+  --pl-match-current-bg: #ffcc33;
+  --pl-radius: 6px;
+
+  display: block;
+  box-sizing: border-box;
+  background: var(--pl-bg);
+  border: 1px solid var(--pl-border);
+  border-radius: var(--pl-radius);
+  color: var(--pl-text);
+  font-family: var(--pl-font-ui);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+.payload-lens *,
+.payload-lens *::before,
+.payload-lens *::after {
+  box-sizing: border-box;
+}
+
+@media (prefers-color-scheme: dark) {
+  .payload-lens:not([data-pl-theme="light"]) {
+    --pl-bg: #16181d;
+    --pl-bg-subtle: #1d2026;
+    --pl-bg-toolbar: #20232a;
+    --pl-border: #33373f;
+    --pl-text: #e6e8eb;
+    --pl-text-muted: #9aa1ac;
+    --pl-accent: #5c8dfa;
+    --pl-accent-contrast: #0b0d10;
+    --pl-key: #c58af9;
+    --pl-string: #56d364;
+    --pl-number: #6cb6ff;
+    --pl-boolean: #ff7b72;
+    --pl-null: #8b949e;
+    --pl-error-bg: #3a1414;
+    --pl-error-border: #7a2b26;
+    --pl-error-text: #ffb4ab;
+    --pl-match-bg: #4d3b06;
+    --pl-match-current-bg: #7a5c0a;
+  }
+}
+
+.payload-lens[data-pl-theme="dark"] {
+  --pl-bg: #16181d;
+  --pl-bg-subtle: #1d2026;
+  --pl-bg-toolbar: #20232a;
+  --pl-border: #33373f;
+  --pl-text: #e6e8eb;
+  --pl-text-muted: #9aa1ac;
+  --pl-accent: #5c8dfa;
+  --pl-accent-contrast: #0b0d10;
+  --pl-key: #c58af9;
+  --pl-string: #56d364;
+  --pl-number: #6cb6ff;
+  --pl-boolean: #ff7b72;
+  --pl-null: #8b949e;
+  --pl-error-bg: #3a1414;
+  --pl-error-border: #7a2b26;
+  --pl-error-text: #ffb4ab;
+  --pl-match-bg: #4d3b06;
+  --pl-match-current-bg: #7a5c0a;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Toolbar                                                                 */
+/* ---------------------------------------------------------------------- */
+
+.payload-lens__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--pl-bg-toolbar);
+  border-bottom: 1px solid var(--pl-border);
+}
+
+.payload-lens__view-switch,
+.payload-lens__actions,
+.payload-lens__search {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.payload-lens__actions {
+  margin-left: auto;
+}
+
+.payload-lens__btn {
+  appearance: none;
+  border: 1px solid var(--pl-border);
+  background: var(--pl-bg);
+  color: var(--pl-text);
+  border-radius: var(--pl-radius);
+  padding: 4px 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.payload-lens__btn:hover {
+  background: var(--pl-bg-subtle);
+}
+
+.payload-lens__btn:focus-visible {
+  outline: 2px solid var(--pl-accent);
+  outline-offset: 1px;
+}
+
+.payload-lens__btn--view.is-active {
+  background: var(--pl-accent);
+  border-color: var(--pl-accent);
+  color: var(--pl-accent-contrast);
+}
+
+.payload-lens__btn--primary {
+  background: var(--pl-accent);
+  border-color: var(--pl-accent);
+  color: var(--pl-accent-contrast);
+}
+
+.payload-lens__btn--icon {
+  padding: 4px 7px;
+  font-weight: 600;
+}
+
+.payload-lens__search-input {
+  min-width: 160px;
+  padding: 4px 8px;
+  border: 1px solid var(--pl-border);
+  border-radius: var(--pl-radius);
+  background: var(--pl-bg);
+  color: var(--pl-text);
+  font-size: 12px;
+}
+
+.payload-lens__search-count {
+  font-size: 11px;
+  color: var(--pl-text-muted);
+  min-width: 64px;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Metadata bar + status                                                   */
+/* ---------------------------------------------------------------------- */
+
+.payload-lens__meta {
+  padding: 6px 10px;
+  font-size: 11px;
+  color: var(--pl-text-muted);
+  background: var(--pl-bg-subtle);
+  border-bottom: 1px solid var(--pl-border);
+}
+
+.payload-lens__status {
+  padding: 0 10px;
+  min-height: 0;
+  font-size: 11px;
+  color: var(--pl-accent);
+}
+
+.payload-lens__status:not(:empty) {
+  padding: 4px 10px;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Viewport / states                                                       */
+/* ---------------------------------------------------------------------- */
+
+.payload-lens__viewport {
+  max-height: 480px;
+  overflow: auto;
+  padding: 8px 10px;
+  font-family: var(--pl-font-mono);
+}
+
+.payload-lens__empty,
+.payload-lens__error {
+  font-family: var(--pl-font-ui);
+  padding: 16px;
+  text-align: left;
+}
+
+.payload-lens__empty {
+  color: var(--pl-text-muted);
+}
+
+.payload-lens__error {
+  background: var(--pl-error-bg);
+  border: 1px solid var(--pl-error-border);
+  border-radius: var(--pl-radius);
+}
+
+.payload-lens__error-title {
+  margin: 0 0 4px;
+  font-weight: 600;
+  color: var(--pl-error-text);
+}
+
+.payload-lens__error-detail {
+  margin: 0;
+  color: var(--pl-error-text);
+  font-family: var(--pl-font-mono);
+  font-size: 12px;
+  word-break: break-word;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Tree view                                                               */
+/* ---------------------------------------------------------------------- */
+
+.payload-lens__tree,
+.payload-lens__children {
+  list-style: none;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.payload-lens__tree {
+  padding-left: 0;
+}
+
+.payload-lens__node-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  white-space: pre;
+}
+
+.payload-lens__node-row:hover {
+  background: var(--pl-bg-subtle);
+}
+
+.payload-lens__toggle {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--pl-text-muted);
+  cursor: pointer;
+  width: 14px;
+  flex: 0 0 auto;
+  font-size: 10px;
+  padding: 0;
+}
+
+.payload-lens__toggle--spacer {
+  cursor: default;
+}
+
+.payload-lens__key {
+  color: var(--pl-key);
+  font-weight: 600;
+}
+
+.payload-lens__summary {
+  color: var(--pl-text-muted);
+}
+
+.payload-lens__path-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--pl-text-muted);
+  font-size: 10px;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0 0 0 6px;
+  opacity: 0;
+  font-family: var(--pl-font-ui);
+}
+
+.payload-lens__node-row:hover .payload-lens__path-btn,
+.payload-lens__path-btn:focus-visible {
+  opacity: 1;
+}
+
+.payload-lens__string { color: var(--pl-string); }
+.payload-lens__number { color: var(--pl-number); }
+.payload-lens__boolean { color: var(--pl-boolean); }
+.payload-lens__null { color: var(--pl-null); }
+
+/* ---------------------------------------------------------------------- */
+/* Code view                                                               */
+/* ---------------------------------------------------------------------- */
+
+.payload-lens__code {
+  margin: 0;
+  white-space: pre;
+  tab-size: 2;
+}
+
+.payload-lens__code .payload-lens__key { font-weight: 400; }
+
+/* ---------------------------------------------------------------------- */
+/* Search highlighting                                                    */
+/* ---------------------------------------------------------------------- */
+
+.payload-lens__match {
+  background: var(--pl-match-bg);
+  border-radius: 3px;
+}
+
+.payload-lens__match--current {
+  background: var(--pl-match-current-bg);
+  outline: 1px solid var(--pl-accent);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Responsive                                                              */
+/* ---------------------------------------------------------------------- */
+
+@media (max-width: 480px) {
+  .payload-lens__toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .payload-lens__actions {
+    margin-left: 0;
+    justify-content: flex-end;
+  }
+  .payload-lens__search-input {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+}
