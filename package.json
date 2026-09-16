@@ -1,0 +1,22 @@
+{
+  "name": "apex-payload-lens",
+  "version": "0.1.0",
+  "description": "PayloadLens for Oracle APEX — an Oracle APEX region plugin to inspect, search, mask and compare integration JSON payloads.",
+  "private": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/B2DEV-TECH/apex-payload-lens.git"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:plugin-files": "node scripts/build-plugin-files.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "vitest": "^5.0.1",
+    "happy-dom": "^20.14.5"
+  }
+}
