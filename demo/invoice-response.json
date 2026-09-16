@@ -1,0 +1,26 @@
+{
+  "eventId": "evt_2b6f9d0a-1122-4a55-8899-aabbccddeeff",
+  "eventType": "invoice.create.response",
+  "issuedAt": "2026-09-10T14:32:09Z",
+  "correlationId": "corr-20260910-000482",
+  "status": "ACCEPTED",
+  "httpStatusCode": 201,
+  "invoice": {
+    "invoiceId": "inv_00d4821",
+    "invoiceNumber": "INV-2026-004821",
+    "status": "PENDING_PAYMENT",
+    "totalAmount": 1284.50,
+    "currency": "USD",
+    "createdAt": "2026-09-10T14:32:08Z",
+    "hostedInvoiceUrl": "https://billing.example.com/invoices/inv_00d4821",
+    "customer": {
+      "customerId": "CUST-10029",
+      "email": "billing@example.com"
+    }
+  },
+  "processing": {
+    "processedBy": "invoice-service-07",
+    "durationMs": 184,
+    "warnings": []
+  }
+}

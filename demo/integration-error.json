@@ -1,0 +1,27 @@
+{
+  "eventId": "evt_ff112233-4455-6677-8899-aabbccddeeff",
+  "eventType": "invoice.create.response",
+  "issuedAt": "2026-09-10T14:35:41Z",
+  "correlationId": "corr-20260910-000483",
+  "status": "REJECTED",
+  "httpStatusCode": 422,
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "One or more invoice fields failed validation.",
+    "details": [
+      {
+        "field": "invoice.customer.taxId",
+        "issue": "TaxId does not match expected format for country US."
+      },
+      {
+        "field": "invoice.lineItems[1].unitPrice",
+        "issue": "unitPrice must be greater than zero."
+      }
+    ],
+    "traceId": "trace-8827af10-example",
+    "retryable": false
+  },
+  "authentication": {
+    "authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.example.rejected-request-token"
+  }
+}

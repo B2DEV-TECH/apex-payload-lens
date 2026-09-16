@@ -1,0 +1,44 @@
+{
+  "eventId": "evt_deepnest-example-0001",
+  "eventType": "integration.diagnostics.snapshot",
+  "issuedAt": "2026-09-10T15:00:00Z",
+  "region": {
+    "code": "us-east-example",
+    "cluster": {
+      "name": "wms-cluster-b",
+      "nodes": [
+        {
+          "nodeId": "node-01",
+          "status": "healthy",
+          "metrics": {
+            "cpuPercent": 42.5,
+            "memory": {
+              "usedMb": 3120,
+              "totalMb": 8192,
+              "tags": ["primary", "warehouse", "example"]
+            }
+          }
+        },
+        {
+          "nodeId": "node-02",
+          "status": "degraded",
+          "metrics": {
+            "cpuPercent": 88.1,
+            "memory": {
+              "usedMb": 7800,
+              "totalMb": 8192,
+              "tags": ["secondary", "example"]
+            }
+          }
+        }
+      ]
+    }
+  },
+  "credentials": {
+    "secret": "example-not-a-real-secret-000000",
+    "refresh_token": "example-refresh-token-abcdef123456"
+  },
+  "emptySection": {},
+  "emptyList": [],
+  "nullField": null
+}

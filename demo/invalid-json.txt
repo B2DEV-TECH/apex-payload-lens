@@ -1,0 +1,13 @@
+{
+  "eventId": "evt_broken-example",
+  "eventType": "invoice.create.request",
+  "invoice": {
+    "invoiceNumber": "INV-2026-009911",
+    "totalAmount": 512.00,
+    "customer": {
+      "name": "Broken Example Corp",
+      "email": "billing@example.com"
+    }
+  // missing closing brace for "invoice", and a trailing comment, on purpose:
+  // this file exists to exercise PayloadLens's invalid-JSON error state.
+}
